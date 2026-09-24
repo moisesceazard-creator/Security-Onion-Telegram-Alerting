@@ -1,0 +1,48 @@
+name: High - Phishing Attack - Connection to Known Malicious IP
+type: any
+index: ".ds-logs-suricata.alerts-so-*"
+use_strftime_index: false
+timestamp_field: "@timestamp"
+timestamp_type: "iso"
+buffer_time:
+  minutes: 5
+filter:
+  - query:
+      query_string:
+        query: 'rule.name:"ET COMPROMISED Known Feodo C2 IP"'
+match_enhancements:
+  - "rules.ph_time.PHTimeEnhancement"
+alert:
+  - telegram
+  - indexer
+telegram_msg_title: "🎣 HIGH - Phishing Attack Detected"
+alert_text: |
+  🚨 Phishing Attack Detected!
+  📌 ATT&CK: T1566 - Phishing / T1204 - User Execution
+  📋 Detection: Connection to Known Malicious Phishing/C2 IP (Feodo Tracker)
+  🖥️ Victim Host: {0}
+  🎯 Malicious IP: {1}
+  🕐 Time (PH Time): {2}
+  ⚡ Action: Isolate host immediately, check for credential compromise, review all outbound connections
+  📣 Notify: MIS Department Head + IT Admin — URGENT
+alert_text_type: alert_text_only
+alert_text_args:
+  - source.ip
+  - destination.ip
+  - time_ph
+indexer_alert_config:
+  rule.name: "Phishing-Related Malicious Communication via Known Malicious IP"
+  rule.uuid: "e5a1c2e0-0001-4a1a-9c1a-a00000000002"
+  rule.category: "command_and_control"
+  rule.product: "security_onion"
+  event.module: "elastalert"
+  event.dataset: "elastalert.alert"
+  event.severity: 3
+  event.severity_label: "high"
+  sigma_level: "high"
+  tags: "detection"
+  source.ip: "source.ip"
+  destination.ip: "destination.ip"
+realert:
+  minutes: 1
+query_key: destination.ip
