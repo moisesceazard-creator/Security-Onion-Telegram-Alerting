@@ -1,0 +1,44 @@
+name: Medium - New Device Connected to LAN
+type: new_term
+index: ".ds-logs-zeek-so-*"
+use_strftime_index: false
+timestamp_field: "@timestamp"
+timestamp_type: "iso"
+fields:
+  - "source.ip"
+terms_window_size:
+  days: 7
+filter:
+  - query_string:
+      query: 'event.dataset:"zeek.conn" AND source.ip:192.168.92.0\/23 AND NOT source.ip:"192.168.92.0" AND NOT source.ip:"192.168.92.255" AND NOT source.ip:"192.168.93.0" AND NOT source.ip:"192.168.93.255"'
+match_enhancements:
+  - "rules.ph_time.PHTimeEnhancement"
+alert:
+  - telegram
+  - indexer
+telegram_msg_title: "🟡 MEDIUM - New Device on Network"
+alert_text: |
+  🚨 New Device Detected on Company LAN!
+  📌 ATT&CK: T1078 - Valid Accounts / Initial Access surface
+  🖥️ New Source IP: {0}
+  🕐 First Seen (PH Time): {1}
+  ⚡ Action: Verify if this device is authorized (employee laptop, new hire, guest, IoT). If unrecognized, isolate and investigate.
+  📣 Notify: MIS IT/Network Staff
+alert_text_type: alert_text_only
+alert_text_args:
+  - source.ip
+  - time_ph
+indexer_alert_config:
+  rule.name: "New Device Connected to LAN"
+  rule.uuid: "e5a1c2e0-0001-4a1a-9c1a-a00000000006"
+  rule.category: "initial_access"
+  rule.product: "security_onion"
+  event.module: "elastalert"
+  event.dataset: "elastalert.alert"
+  event.severity: 2
+  event.severity_label: "medium"
+  sigma_level: "medium"
+  tags: "detection"
+  source.ip: "source.ip"
+realert:
+  minutes: 30
