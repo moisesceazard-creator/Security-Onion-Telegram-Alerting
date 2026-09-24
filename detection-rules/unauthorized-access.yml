@@ -1,0 +1,48 @@
+name: High - Unauthorized Workstation Access Attempt
+type: frequency
+index: ".ds-logs-system.security-default-*"
+use_strftime_index: false
+timestamp_field: "@timestamp"
+timestamp_type: "iso"
+num_events: 3
+timeframe:
+  minutes: 5
+query_key: "agent.name"
+filter:
+  - query:
+      query_string:
+        query: "winlog.event_id:4625 AND winlog.event_data.LogonType:(2 OR 7)"
+match_enhancements:
+  - "rules.ph_time.PHTimeEnhancement"
+alert:
+  - telegram
+  - indexer
+telegram_msg_title: "🟠 HIGH - Unauthorized Workstation Access Attempt"
+alert_text: |
+  🚨 Repeated Failed Workstation Logon/Unlock Attempts Detected
+  📌 ATT&CK: T1078 - Valid Accounts
+  🖥️ Hostname: {0}
+  👤 Target Account: {1}
+  🕐 Time (PH Time): {2}
+  ⚡ Action: Verify whether this is the legitimate user having trouble logging in/unlocking, or an unauthorized access attempt. Escalate if unconfirmed.
+  📣 Notify: MIS Department Head + IT Admin
+alert_text_type: alert_text_only
+alert_text_args:
+  - agent.name
+  - winlog.event_data.TargetUserName
+  - time_ph
+indexer_alert_config:
+  rule.name: "Unauthorized Workstation Access Attempt"
+  rule.uuid: "e5a1c2e0-0001-4a1a-9c1a-a00000000003"
+  rule.category: "authentication_failure"
+  rule.product: "security_onion"
+  event.module: "elastalert"
+  event.dataset: "elastalert.alert"
+  event.severity: 3
+  event.severity_label: "high"
+  sigma_level: "high"
+  tags: "detection"
+  agent.name: "agent.name"
+  winlog.event_data.TargetUserName: "winlog.event_data.TargetUserName"
+realert:
+  minutes: 15
