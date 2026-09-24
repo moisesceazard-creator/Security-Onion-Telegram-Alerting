@@ -1,0 +1,12 @@
+# Never commit real credentials pulled from the live server
+*.sls
+*secrets*
+*.env
+config.yaml
+soc_elastalert.sls
+adv_elastalert.sls
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+*.swp
