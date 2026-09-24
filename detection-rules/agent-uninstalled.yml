@@ -1,0 +1,43 @@
+name: High - Elastic Agent Uninstalled or Unenrolled from Endpoint
+type: any
+index: ".fleet-agents"
+use_strftime_index: false
+timestamp_field: "unenrolled_at"
+timestamp_type: "iso"
+buffer_time:
+  minutes: 5
+filter:
+  - query:
+      query_string:
+        query: 'active:false AND unenrolled_at:* AND (local_metadata.host.hostname:"mis-pc2" OR local_metadata.host.hostname:"mis-pc14" OR local_metadata.host.hostname:"mis-pc5" OR local_metadata.host.hostname:"mis_pc4" OR local_metadata.host.hostname:"mis-pc6")'
+match_enhancements:
+  - "rules.ph_time.PHTimeEnhancement"
+alert:
+  - telegram
+  - indexer
+telegram_msg_title: "🔴 HIGH - Elastic Agent Removed From Endpoint"
+alert_text: |
+  🚨 Elastic Agent Uninstalled/Unenrolled Detected!
+  📌 ATT&CK: T1562.001 - Impair Defenses: Disable or Modify Tools
+  🖥️ Hostname: {0}
+  🕐 Time (PH Time): {1}
+  ⚡ Action: Verify whether this was an authorized decommission/reinstall. If unconfirmed, this endpoint has LOST all monitoring coverage - investigate immediately and re-enroll.
+  📣 Notify: MIS IT/Network Staff
+alert_text_type: alert_text_only
+alert_text_args:
+  - local_metadata.host.hostname
+  - time_ph
+indexer_alert_config:
+  rule.name: "Elastic Agent Uninstalled or Unenrolled from Endpoint"
+  rule.uuid: "e5a1c2e0-0001-4a1a-9c1a-a00000000007"
+  rule.category: "defense_evasion"
+  rule.product: "security_onion"
+  event.module: "elastalert"
+  event.dataset: "elastalert.alert"
+  event.severity: 3
+  event.severity_label: "high"
+  sigma_level: "high"
+  tags: "detection"
+  host.name: "local_metadata.host.hostname"
+realert:
+  minutes: 5
