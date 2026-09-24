@@ -1,0 +1,51 @@
+name: Critical - SSH Brute Force Authentication Attempt
+type: any
+index: ".ds-logs-detections.alerts-so-*"
+use_strftime_index: false
+timestamp_field: "@timestamp"
+timestamp_type: "iso"
+buffer_time:
+  minutes: 5
+filter:
+  - query:
+      query_string:
+        query: 'rule.name:"Security Onion - Grid Node Login Failure (SSH)"'
+match_enhancements:
+  - "rules.ph_time.PHTimeEnhancement"
+alert:
+  - telegram
+  - indexer
+telegram_msg_title: "🔴 CRITICAL - SSH Brute Force Detected"
+alert_text: |
+  🚨 SSH Brute Force Authentication Attempt Detected!
+  📌 ATT&CK: T1110 - Brute Force / T1021.004 - SSH
+  📋 Rule Matched: {0}
+  🖥️ Attacker IP: {1}
+  🎯 Target: {2}
+  👤 User Attempted: {3}
+  🕐 Time (PH Time): {4}
+  ⚡ Action: Block source IP immediately, check for successful logins, review SSH logs
+  📣 Notify: MIS Department Head + IT Admin — URGENT
+alert_text_type: alert_text_only
+alert_text_args:
+  - rule.name
+  - event_data.source.ip
+  - event_data.host.name
+  - event_data.user.name
+  - time_ph
+indexer_alert_config:
+  rule.name: "SSH Brute-Force Authentication Attempt"
+  rule.uuid: "e5a1c2e0-0001-4a1a-9c1a-a00000000001"
+  rule.category: "credential_access"
+  rule.product: "security_onion"
+  event.module: "elastalert"
+  event.dataset: "elastalert.alert"
+  event.severity: 4
+  event.severity_label: "critical"
+  sigma_level: "critical"
+  tags: "detection"
+  source.ip: "event_data.source.ip"
+  host.name: "event_data.host.name"
+  user.name: "event_data.user.name"
+realert:
+  minutes: 1
